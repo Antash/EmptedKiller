@@ -1,11 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
-namespace EmptedKiller
+namespace EmptedKillerCore
 {
     class Program
     {
-        static Position pos;
+        static IPosition pos;
+        static FenSerializer<NaivePositionBuilder> fs = new FenSerializer<NaivePositionBuilder>();
+        static IEvaluate ev = new EvaluationCore();
+        static Random rnd = new Random(DateTime.Now.Millisecond);
         static void Main(string[] args)
         {
             using (var commandLog = new StreamWriter(@"C:\Users\aashm\Downloads\log.txt"))
@@ -33,24 +37,32 @@ namespace EmptedKiller
                     pos = null;
                     break;
                 case UCICommandType.Position:
-                    pos = new Position(true);
+                    pos = new NaivePosition();
                     break;
                 case UCICommandType.PositionNextMove:
                     if (pos == null)
                     {
-                        pos = new Position(false);
+                        pos = new NaivePosition();
                     }
-                    pos.MakeMove(args.Data);
+                    pos = pos.MakeMove(NotationHelper.ParseMoveCode(args.Data));
                     break;
                 case UCICommandType.Go:
-                    var bestMove = pos.GetNextMove();
-                    pos.MakeMove(bestMove);
+                    var eng = new Engine(ev);
+                    eng.Analyze(pos);
+
+                    var ll = eng.lines;
+                    var maxEval = ll.Max(la => ev.Evaluate(la));
+                    var best = ll.Where(l => Math.Abs(ev.Evaluate(l) - maxEval) < float.Epsilon).ToList();
+                    var theBest = best[rnd.Next(best.Count)];
+                    var bestMove = theBest.Moves[pos.Moves.Count];
+                    pos = pos.MakeMove(bestMove);
+                    var bestmoveStr = NotationHelper.GetMoveCode(bestMove);
                     using (var commandLog = new StreamWriter(@"C:\Users\aashm\Downloads\log.txt", true))
                     {
-                        commandLog.WriteLine($"Current position: {pos.ToString()}");
-                        commandLog.WriteLine($"bestmove {bestMove}");
+                        commandLog.WriteLine($"Current position: {fs.Write(pos)}");
+                        commandLog.WriteLine($"bestmove {bestmoveStr}");
                     }
-                    Console.WriteLine($"bestmove {bestMove}");
+                    Console.WriteLine($"bestmove {bestmoveStr}");
                     break;
                 case UCICommandType.Quit:
                     Environment.Exit(0);

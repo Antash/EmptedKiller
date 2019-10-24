@@ -1,4 +1,4 @@
-﻿namespace EmptedKiller
+﻿namespace EmptedKillerCore
 {
     public enum UCICommandType
     {

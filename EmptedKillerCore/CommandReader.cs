@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace EmptedKiller
+namespace EmptedKillerCore
 {
     public class CommandReader
     {
