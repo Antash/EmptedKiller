@@ -1,10 +1,11 @@
-﻿using System;
+﻿using EmptedKillerCore.Evaluation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace EmptedKillerCore
 {
-    class Engine
+    public class Engine
     {
         public List<IPosition> lines = new List<IPosition>();
 
@@ -22,28 +23,30 @@ namespace EmptedKillerCore
 
         private List<IPosition> AnalyzeLines(IPosition initialLine, int depth, float min = float.MaxValue, float max = float.MinValue)
         {
-            if (depth == 0)
+            if (depth == 0 || (Math.Abs(_evaluationEngine.Evaluate(initialLine)) == IEvaluate.MaxEvaluation))
             {
                 return new[] { initialLine }.ToList();
             }
             bool whiteToMove = initialLine.WhiteToMove;
             List<IPosition> bestLines = new List<IPosition>();
-            var bestEvaluation = whiteToMove ? float.MinValue : float.MaxValue;
-            var linesToConsider = initialLine.GetValidMoves().Select(m => initialLine.MakeMove(m));
+            var bestEvaluation = whiteToMove ? -IEvaluate.MaxEvaluation : IEvaluate.MaxEvaluation;
+            var linesToConsider = initialLine.GetValidMoves()
+                .Select(m => initialLine.MakeMove(m));
            
             foreach (var line in linesToConsider)
             {
                 var consideredLines = AnalyzeLines(line, depth - 1, min, max);
                 foreach (var consideredLine in consideredLines)
                 {
-                    if (whiteToMove && bestEvaluation < _evaluationEngine.Evaluate(consideredLine) ||
-                        !whiteToMove && bestEvaluation > _evaluationEngine.Evaluate(consideredLine))
+                    var eval = _evaluationEngine.Evaluate(consideredLine);
+                    if (whiteToMove && bestEvaluation < eval ||
+                        !whiteToMove && bestEvaluation > eval)
                     {
                         bestLines.Clear();
                         bestLines.Add(consideredLine);
-                        bestEvaluation = _evaluationEngine.Evaluate(consideredLine);
+                        bestEvaluation = eval;
                     }
-                    else if (bestEvaluation == _evaluationEngine.Evaluate(consideredLine))
+                    else if (bestEvaluation == eval)
                     {
                         bestLines.Add(consideredLine);
                     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmptedKillerCore.Evaluation;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -8,7 +9,10 @@ namespace EmptedKillerCore
     {
         static IPosition pos;
         static FenSerializer<NaivePositionBuilder> fs = new FenSerializer<NaivePositionBuilder>();
-        static IEvaluate ev = new EvaluationCore();
+        static IEvaluate ev = new EvaluationCore(
+            new PieceValueEvaluation(), 
+            new PieceActivityEvaluation()
+            );
         static Random rnd = new Random(DateTime.Now.Millisecond);
         static void Main(string[] args)
         {
@@ -51,9 +55,7 @@ namespace EmptedKillerCore
                     eng.Analyze(pos);
 
                     var ll = eng.lines;
-                    var maxEval = ll.Max(la => ev.Evaluate(la));
-                    var best = ll.Where(l => Math.Abs(ev.Evaluate(l) - maxEval) < float.Epsilon).ToList();
-                    var theBest = best[rnd.Next(best.Count)];
+                    var theBest = ll[rnd.Next(ll.Count)];
                     var bestMove = theBest.Moves[pos.Moves.Count];
                     pos = pos.MakeMove(bestMove);
                     var bestmoveStr = NotationHelper.GetMoveCode(bestMove);

@@ -22,16 +22,16 @@ namespace EmptedKillerCore
 
         public int EnPassantRank { get; private set; }
 
-        public sbyte[,] Board { get; } = new sbyte[8, 8];
+        public Piece[,] Board { get; } = new Piece[8, 8];
 
         public IPosition Build()
         {
             return new NaivePosition(this);
         }
 
-        public void PutPiece(int rank, int file, Piece piece, bool isWhite)
+        public void PutPiece(int rank, int file, Piece piece)
         {
-            Board[rank, file] = (sbyte)(isWhite ? (int)piece : -(int)piece);
+            Board[rank, file] = piece;
         }
 
         public void SetCastling(bool forWhite, Castling flags)

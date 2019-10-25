@@ -24,9 +24,9 @@ namespace EmptedKillerCore
 
         Piece GetPiece(int rank, int file);
 
-        bool IsWhitePiece(int rank, int file);
-
         IEnumerable<Move> GetValidMoves();
+
+        IEnumerable<object> GetValidMoves(int rank, int file);
 
         IPosition MakeMove(Move move);
     }

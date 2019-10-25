@@ -1,4 +1,6 @@
-﻿namespace EmptedKillerCore
+﻿using System.Diagnostics;
+
+namespace EmptedKillerCore
 {
     public class Move
     {
@@ -25,5 +27,10 @@
         public int ToFile { get; }
 
         public Piece? PromotionPiece { get; }
+
+        public override string ToString()
+        {
+            return NotationHelper.GetMoveCode(this);
+        }
     }
 }

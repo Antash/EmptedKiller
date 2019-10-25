@@ -1,14 +1,19 @@
-﻿namespace EmptedKillerCore
+﻿using System;
+
+namespace EmptedKillerCore
 {
-    public enum Piece
+    [Flags]
+    public enum Piece : sbyte
     {
         None = 0,
 
         Pawn = 1,
         Knight = 2,
-        Bishop = 3,
-        Rook = 4,
-        Queen = 5,
-        King = 6,
+        Bishop = 4,
+        Rook = 8,
+        Queen = 16,
+        King = 32,
+
+        Black = 64
     }
 }

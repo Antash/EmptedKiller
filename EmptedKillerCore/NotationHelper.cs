@@ -4,9 +4,27 @@ namespace EmptedKillerCore
 {
     public static class NotationHelper
     {
+        public static int GetRank(this string sqareCode)
+        {
+            if (sqareCode.Length != 2)
+            {
+                throw new ArgumentException("Is not square code", nameof(sqareCode));
+            }
+            return 7 - (sqareCode[1] - '1');
+        }
+
+        public static int GetFile(this string sqareCode)
+        {
+            if (sqareCode.Length != 2)
+            {
+                throw new ArgumentException("Is not square code", nameof(sqareCode));
+            }
+            return sqareCode[0] - 'a';
+        }
+
         public static char GetPieceChar(Piece piece)
         {
-            return piece switch
+            return (piece & ~Piece.Black) switch
             {
                 Piece.Pawn => 'p',
                 Piece.Knight => 'n',
@@ -29,6 +47,7 @@ namespace EmptedKillerCore
                 'r' => Piece.Rook,
                 'q' => Piece.Queen,
                 'k' => Piece.King,
+
                 _ => throw new ArgumentException("Unsupported piece char", nameof(code)),
             };
         }

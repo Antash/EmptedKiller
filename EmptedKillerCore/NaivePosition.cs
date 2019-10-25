@@ -17,26 +17,26 @@ namespace EmptedKillerCore
         private static readonly (int, int)[] knightMoveOffsets = new[] { (1, 2), (2, 1), (-1, 2), (1, -2), (-2, 1), (2, -1), (-1, -2), (-2, -1) };
         private static readonly (int, int)[] kingMoveOffsets = new[] { (1, 1), (0, 1), (1, 0), (1, -1), (-1, 1), (0, -1), (-1, 0), (-1, -1) };
 
-        private readonly sbyte[,] _board = new sbyte[8, 8];
+        private readonly Piece[,] _board = new Piece[8, 8];
 
         public NaivePosition()
         {
             Array.Clear(_board, 0, _board.Length);
             for (int i = 0; i < 8; i++)
             {
-                _board[1, i] = -1;
-                _board[6, i] = 1;
+                _board[1, i] = Piece.Pawn | Piece.Black;
+                _board[6, i] = Piece.Pawn;
             }
-            _board[0, 0] = _board[0, 7] = -4;
-            _board[7, 0] = _board[7, 7] = 4;
-            _board[0, 1] = _board[0, 6] = -2;
-            _board[7, 1] = _board[7, 6] = 2;
-            _board[0, 2] = _board[0, 5] = -3;
-            _board[7, 2] = _board[7, 5] = 3;
-            _board[0, 3] = -5;
-            _board[0, 4] = -6;
-            _board[7, 3] = 5;
-            _board[7, 4] = 6;
+            _board[0, 0] = _board[0, 7] = Piece.Rook | Piece.Black;
+            _board[7, 0] = _board[7, 7] = Piece.Rook;
+            _board[0, 1] = _board[0, 6] = Piece.Knight | Piece.Black;
+            _board[7, 1] = _board[7, 6] = Piece.Knight;
+            _board[0, 2] = _board[0, 5] = Piece.Bishop | Piece.Black;
+            _board[7, 2] = _board[7, 5] = Piece.Bishop;
+            _board[0, 3] = Piece.Queen | Piece.Black;
+            _board[0, 4] = Piece.King | Piece.Black;
+            _board[7, 3] = Piece.Queen;
+            _board[7, 4] = Piece.King;
 
             WhiteCastling = BlackCastling = Castling.KingSide | Castling.QueenSide;
             WhiteToMove = true;
@@ -100,28 +100,27 @@ namespace EmptedKillerCore
                 {
                     var accessibleSqares = Enumerable.Empty<(int, int)>();
                     var piece = _board[rank, file];
-                    if (piece > 0 && whiteMoves || piece < 0 && !whiteMoves)
+                    if (((piece & Piece.Black) == 0) == whiteMoves)
                     {
-                        switch (Math.Abs(piece))
+                        switch (piece & ~Piece.Black)
                         {
-                            case 1:
-                                accessibleSqares = GetPawnAccessibleSquares(rank, file, -Math.Sign(piece), potentialCapture);
+                            case Piece.Pawn:
+                                accessibleSqares = GetPawnAccessibleSquares(rank, file, potentialCapture);
                                 break;
-                            case 2:
-                                accessibleSqares = GetKnightAccessibleSqares(rank, file, -Math.Sign(piece));
+                            case Piece.Knight:
+                                accessibleSqares = GetKnightAccessibleSqares(rank, file);
                                 break;
-                            case 3:
-                                accessibleSqares = GetBishopAccessibleSqares(rank, file, -Math.Sign(piece));
+                            case Piece.Bishop:
+                                accessibleSqares = GetBishopAccessibleSqares(rank, file);
                                 break;
-                            case 4:
-                                accessibleSqares = GetRookAccessibleSqares(rank, file, -Math.Sign(piece));
+                            case Piece.Rook:
+                                accessibleSqares = GetRookAccessibleSqares(rank, file);
                                 break;
-                            case 5:
-                                accessibleSqares = GetBishopAccessibleSqares(rank, file, -Math.Sign(piece))
-                                    .Concat(GetRookAccessibleSqares(rank, file, -Math.Sign(piece)));
+                            case Piece.Queen:
+                                accessibleSqares = GetBishopAccessibleSqares(rank, file).Concat(GetRookAccessibleSqares(rank, file));
                                 break;
-                            case 6:
-                                accessibleSqares = GetKingAccessibleSqares(rank, file, -Math.Sign(piece), potentialCapture);
+                            case Piece.King:
+                                accessibleSqares = GetKingAccessibleSqares(rank, file, potentialCapture);
                                 break;
                         }
                     }
@@ -134,12 +133,12 @@ namespace EmptedKillerCore
                         {
                             continue;
                         }
-                        if (Math.Abs(piece) == 1 && (newRank == 0 || newRank == 7))
+                        if ((piece & Piece.Pawn) != Piece.None && (newRank == 0 || newRank == 7))
                         {
                             // Pawn promotion moves
-                            for (sbyte newPiece = 5; newPiece > 1; newPiece--)
+                            for (int offset = 1; offset < 5; offset++)
                             {
-                                moves.Add(new Move(rank, file, newRank, newFile, (Piece)newPiece));
+                                moves.Add(new Move(rank, file, newRank, newFile, (Piece)(1 << offset)));
                             }
                         }
                         else
@@ -153,33 +152,34 @@ namespace EmptedKillerCore
             return moves;
         }
 
-        private IEnumerable<(int, int)> GetBishopAccessibleSqares(int rank, int file, int capturePieceSign)
+        private IEnumerable<(int, int)> GetBishopAccessibleSqares(int rank, int file)
         {
-            var allSqares = GetSqaresUntillObstacle(rank, file, 1, 1, capturePieceSign)
-                .Concat(GetSqaresUntillObstacle(rank, file, 1, -1, capturePieceSign))
-                .Concat(GetSqaresUntillObstacle(rank, file, -1, 1, capturePieceSign))
-                .Concat(GetSqaresUntillObstacle(rank, file, -1, -1, capturePieceSign));
+            var allSqares = GetSqaresUntillObstacle(rank, file, 1, 1)
+                .Concat(GetSqaresUntillObstacle(rank, file, 1, -1))
+                .Concat(GetSqaresUntillObstacle(rank, file, -1, 1))
+                .Concat(GetSqaresUntillObstacle(rank, file, -1, -1));
             foreach (var sqare in allSqares)
             {
                 yield return sqare;
             }
         }
 
-        private IEnumerable<(int, int)> GetRookAccessibleSqares(int rank, int file, int capturePieceSign)
+        private IEnumerable<(int, int)> GetRookAccessibleSqares(int rank, int file)
         {
-            var allSqares = GetSqaresUntillObstacle(rank, file, 1, 0, capturePieceSign)
-                .Concat(GetSqaresUntillObstacle(rank, file, 0, 1, capturePieceSign))
-                .Concat(GetSqaresUntillObstacle(rank, file, -1, 0, capturePieceSign))
-                .Concat(GetSqaresUntillObstacle(rank, file, 0, -1, capturePieceSign));
+            var allSqares = GetSqaresUntillObstacle(rank, file, 1, 0)
+                .Concat(GetSqaresUntillObstacle(rank, file, 0, 1))
+                .Concat(GetSqaresUntillObstacle(rank, file, -1, 0))
+                .Concat(GetSqaresUntillObstacle(rank, file, 0, -1));
             foreach (var sqare in allSqares)
             {
                 yield return sqare;
             }
         }
 
-        private IEnumerable<(int, int)> GetSqaresUntillObstacle(int rank, int file, int rankOffset, int fileOffset, int capturePieceSign)
+        private IEnumerable<(int, int)> GetSqaresUntillObstacle(int rank, int file, int rankOffset, int fileOffset)
         {
-            while(true)
+            var piece = _board[rank, file];
+            while (true)
             {
                 rank += rankOffset;
                 file += fileOffset;
@@ -187,7 +187,7 @@ namespace EmptedKillerCore
                 {
                     yield break;
                 }
-                if (_board[rank, file] * capturePieceSign >= 0)
+                if ((_board[rank, file] & Piece.Black) != (piece & Piece.Black))
                 {
                     yield return (rank, file);
                 }
@@ -198,12 +198,12 @@ namespace EmptedKillerCore
             }
         }
 
-        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file, int capturePieceSign, bool potentialCapture)
+        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file, bool potentialCapture)
         {
             foreach (var offset in kingMoveOffsets)
             {
                 if (IsOnBoard(rank + offset.Item1, file + offset.Item2) && 
-                    _board[rank + offset.Item1, file + offset.Item2] * capturePieceSign >= 0)
+                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black)))
                 {
                     yield return (rank + offset.Item1, file + offset.Item2);
                 }
@@ -242,19 +242,21 @@ namespace EmptedKillerCore
                 .Any(move => move.ToRank == rank && move.ToFile == file);
         }
 
-        private IEnumerable<(int, int)> GetKnightAccessibleSqares(int rank, int file, int capturePieceSign)
+        private IEnumerable<(int, int)> GetKnightAccessibleSqares(int rank, int file)
         {
             foreach (var offset in knightMoveOffsets)
             {
-                if (IsOnBoard(rank + offset.Item1, file + offset.Item2) && _board[rank + offset.Item1, file + offset.Item2] * capturePieceSign >= 0)
+                if (IsOnBoard(rank + offset.Item1, file + offset.Item2) && 
+                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black)))
                 {
                     yield return (rank + offset.Item1, file + offset.Item2);
                 }
             }
         }
 
-        private IEnumerable<(int, int)> GetPawnAccessibleSquares(int rank, int file, int offset, bool captureOnly)
+        private IEnumerable<(int, int)> GetPawnAccessibleSquares(int rank, int file, bool captureOnly)
         {
+            int offset = (_board[rank, file] & Piece.Black) == 0 ? -1 : 1;
             if (!captureOnly)
             {
                 // White or black start pawn rank
@@ -271,11 +273,13 @@ namespace EmptedKillerCore
                 }
             }
             // Captures
-            if (file - 1 >= 0 && _board[rank + offset, file - 1] * offset > 0)
+            if (file - 1 >= 0 && _board[rank + offset, file - 1] != Piece.None && 
+                ((_board[rank + offset, file - 1] & Piece.Black) != (_board[rank, file] & Piece.Black)))
             {
                 yield return (rank + offset, file - 1);
             }
-            if (file + 1 < 8 && _board[rank + offset, file + 1] * offset > 0)
+            if (file + 1 < 8 && _board[rank + offset, file + 1] != Piece.None && 
+                ((_board[rank + offset, file + 1] & Piece.Black) != (_board[rank, file] & Piece.Black)))
             {
                 yield return (rank + offset, file + 1);
             }
@@ -294,12 +298,7 @@ namespace EmptedKillerCore
 
         public Piece GetPiece(int rank, int file)
         {
-            return (Piece)Math.Abs(_board[rank, file]);
-        }
-
-        public bool IsWhitePiece(int rank, int file)
-        {
-            return _board[rank, file] > 0;
+            return _board[rank, file];
         }
 
         public IEnumerable<Move> GetValidMoves()
@@ -319,7 +318,7 @@ namespace EmptedKillerCore
             if (move.PromotionPiece.HasValue)
             {
                 // Pawn promotion
-                piece = (sbyte)(Math.Sign(piece) * (sbyte)move.PromotionPiece.Value);
+                piece = move.PromotionPiece.Value | (WhiteToMove ? Piece.None : Piece.Black);
             }
             // Capture: clear halfmove counter
             if (position._board[move.ToRank, move.ToFile] != 0)
@@ -329,7 +328,7 @@ namespace EmptedKillerCore
             position._board[move.FromRank, move.FromFile] = 0;
             position._board[move.ToRank, move.ToFile] = piece;
 
-            switch ((Piece)Math.Abs(piece))
+            switch (piece & ~Piece.Black)
             {
                 case Piece.Pawn:
                     // En-passant capture
@@ -391,6 +390,25 @@ namespace EmptedKillerCore
             }
 
             return position;
+        }
+
+        public IEnumerable<object> GetValidMoves(int rank, int file)
+        {
+            yield return GetPiece(rank, file) switch
+            {
+                Piece.Pawn => GetPawnAccessibleSquares(rank, file, false),
+                Piece.Knight => GetKnightAccessibleSqares(rank, file),
+                Piece.Bishop => GetBishopAccessibleSqares(rank, file),
+                Piece.Rook => GetRookAccessibleSqares(rank, file),
+                Piece.Queen => GetRookAccessibleSqares(rank, file).Concat(GetBishopAccessibleSqares(rank, file)),
+
+                _ => Enumerable.Empty<object>(),
+            };
+        }
+
+        public override string ToString()
+        {
+            return new FenSerializer<NaivePositionBuilder>().Write(this);
         }
     }
 }

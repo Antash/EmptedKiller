@@ -2,7 +2,7 @@
 {
     public interface IPositionBuilder
     {
-        void PutPiece(int rank, int file, Piece piece, bool isWhite);
+        void PutPiece(int rank, int file, Piece piece);
 
         void SetWhiteToMove(bool value);
 

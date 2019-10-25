@@ -27,7 +27,7 @@ namespace EmptedKillerCore
                         else
                         {
                             var piece = NotationHelper.GetPiece(item);
-                            builder.PutPiece(rank, file, piece, char.IsUpper(item));
+                            builder.PutPiece(rank, file, piece | (char.IsLower(item) ? Piece.Black : Piece.None));
                             file++;
                         }
                     }
@@ -48,8 +48,11 @@ namespace EmptedKillerCore
                 {
                     builder.SetEnPassant(7 - (chunks[3][1] - '1'), chunks[3][0] - 'a');
                 }
-                builder.SetHalfMoves(int.Parse(chunks[4]));
-                builder.SetFullMoves(int.Parse(chunks[5]));
+                if (chunks.Length > 4)
+                {
+                    builder.SetHalfMoves(int.Parse(chunks[4]));
+                    builder.SetFullMoves(int.Parse(chunks[5]));
+                }
                 return builder.Build();
             }
             catch
@@ -70,7 +73,7 @@ namespace EmptedKillerCore
                     if (piece != Piece.None)
                     {
                         char pieceChar = NotationHelper.GetPieceChar(piece);
-                        pieceChar = position.IsWhitePiece(rank, file) ? char.ToUpper(pieceChar) : pieceChar;
+                        pieceChar = (piece & Piece.Black) == 0 ? char.ToUpper(pieceChar) : pieceChar;
                         if (gap > 0)
                         {
                             res.Append(gap);

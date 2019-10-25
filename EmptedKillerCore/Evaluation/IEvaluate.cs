@@ -1,4 +1,4 @@
-﻿namespace EmptedKillerCore
+﻿namespace EmptedKillerCore.Evaluation
 {
     public interface IEvaluate
     {
