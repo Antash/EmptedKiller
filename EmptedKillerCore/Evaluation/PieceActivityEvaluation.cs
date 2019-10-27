@@ -23,7 +23,7 @@ namespace EmptedKillerCore.Evaluation
 
         private float GetPieceActivity(IPosition position, int rank, int file)
         {
-            return position.GetPiece(rank, file) switch
+            return position.GetPiece(rank, file).NoColor() switch
             {
                 Piece.Knight => position.GetValidMoves(rank, file).Count() * 0.1f,
                 Piece.Bishop => position.GetValidMoves(rank, file).Count() * 0.1f,

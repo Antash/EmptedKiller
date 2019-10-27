@@ -2,7 +2,7 @@
 {
     public interface IEvaluate
     {
-        const float MaxEvaluation = 500;
+        static readonly float MaxEvaluation = 500;
 
         float Evaluate(IPosition position);
     }

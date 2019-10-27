@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmptedKillerCore", "EmptedKillerCore\EmptedKillerCore.csproj", "{A79ABE24-311C-46AE-B1A1-07A20D0E7C2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmptedKillerCoreTests", "EmptedKillerCoreTests\EmptedKillerCoreTests.csproj", "{70715968-F1E6-40FC-AAAC-83E3B4B076AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmptedKillerCore.Tests", "EmptedKillerCore.Tests\EmptedKillerCore.Tests.csproj", "{70715968-F1E6-40FC-AAAC-83E3B4B076AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
