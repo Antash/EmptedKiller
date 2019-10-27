@@ -102,7 +102,7 @@ namespace EmptedKillerCore
                     var piece = _board[rank, file];
                     if (((piece & Piece.Black) == 0) == whiteMoves)
                     {
-                        switch (piece & ~Piece.Black)
+                        switch (piece.NoColor())
                         {
                             case Piece.Pawn:
                                 accessibleSqares = GetPawnAccessibleSquares(rank, file, potentialCapture);
@@ -120,36 +120,40 @@ namespace EmptedKillerCore
                                 accessibleSqares = GetBishopAccessibleSqares(rank, file).Concat(GetRookAccessibleSqares(rank, file));
                                 break;
                             case Piece.King:
-                                accessibleSqares = GetKingAccessibleSqares(rank, file, potentialCapture);
+                                accessibleSqares = GetKingAccessibleSqares(rank, file);
                                 break;
                         }
                     }
 
                     foreach(var square in accessibleSqares)
                     {
-                        var newRank = square.Item1;
-                        var newFile = square.Item2;
-                        if (onlyCapture && _board[newRank, newFile] == 0)
+                        if (onlyCapture && _board[square.Item1, square.Item2] == 0)
                         {
                             continue;
                         }
-                        if ((piece & Piece.Pawn) != Piece.None && (newRank == 0 || newRank == 7))
-                        {
-                            // Pawn promotion moves
-                            for (int offset = 1; offset < 5; offset++)
-                            {
-                                moves.Add(new Move(rank, file, newRank, newFile, (Piece)(1 << offset)));
-                            }
-                        }
-                        else
-                        {
-                            moves.Add(new Move(rank, file, newRank, newFile));
-                        }
+                        moves.AddRange(ConvertToMove(rank, file, square.Item1, square.Item2));
                     }
                 }
             }
 
             return moves;
+        }
+
+        private IEnumerable<Move> ConvertToMove(int rank, int file, int newRank, int newFile)
+        {
+            var piece = _board[rank, file];
+            if ((piece & Piece.Pawn) != Piece.None && (newRank == 0 || newRank == 7))
+            {
+                // Pawn promotion moves
+                for (int offset = 1; offset < 5; offset++)
+                {
+                    yield return new Move(rank, file, newRank, newFile, (Piece)(1 << offset));
+                }
+            }
+            else
+            {
+                yield return new Move(rank, file, newRank, newFile);
+            }
         }
 
         private IEnumerable<(int, int)> GetBishopAccessibleSqares(int rank, int file)
@@ -187,7 +191,7 @@ namespace EmptedKillerCore
                 {
                     yield break;
                 }
-                if ((_board[rank, file] & Piece.Black) != (piece & Piece.Black))
+                if (_board[rank, file] == 0 || (_board[rank, file] & Piece.Black) != (piece & Piece.Black))
                 {
                     yield return (rank, file);
                 }
@@ -198,21 +202,18 @@ namespace EmptedKillerCore
             }
         }
 
-        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file, bool potentialCapture)
+        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file)
         {
             foreach (var offset in kingMoveOffsets)
             {
                 if (IsOnBoard(rank + offset.Item1, file + offset.Item2) && 
-                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black)))
+                    (_board[rank + offset.Item1, file + offset.Item2] == 0 ||
+                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black))))
                 {
                     yield return (rank + offset.Item1, file + offset.Item2);
                 }
             }
 
-            if (potentialCapture)
-            {
-                yield break;
-            }
             // Castling
             var castlingFlags = WhiteToMove ? WhiteCastling : BlackCastling;
             var rankToCheck = WhiteToMove ? 7 : 0;
@@ -247,7 +248,8 @@ namespace EmptedKillerCore
             foreach (var offset in knightMoveOffsets)
             {
                 if (IsOnBoard(rank + offset.Item1, file + offset.Item2) && 
-                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black)))
+                    (_board[rank + offset.Item1, file + offset.Item2] == 0 ||
+                    ((_board[rank + offset.Item1, file + offset.Item2] & Piece.Black) != (_board[rank, file] & Piece.Black))))
                 {
                     yield return (rank + offset.Item1, file + offset.Item2);
                 }
@@ -328,7 +330,7 @@ namespace EmptedKillerCore
             position._board[move.FromRank, move.FromFile] = 0;
             position._board[move.ToRank, move.ToFile] = piece;
 
-            switch (piece & ~Piece.Black)
+            switch (piece.NoColor())
             {
                 case Piece.Pawn:
                     // En-passant capture
@@ -392,17 +394,18 @@ namespace EmptedKillerCore
             return position;
         }
 
-        public IEnumerable<object> GetValidMoves(int rank, int file)
+        public IEnumerable<Move> GetValidMoves(int rank, int file)
         {
-            yield return GetPiece(rank, file) switch
+            return (GetPiece(rank, file).NoColor()) switch
             {
-                Piece.Pawn => GetPawnAccessibleSquares(rank, file, false),
-                Piece.Knight => GetKnightAccessibleSqares(rank, file),
-                Piece.Bishop => GetBishopAccessibleSqares(rank, file),
-                Piece.Rook => GetRookAccessibleSqares(rank, file),
-                Piece.Queen => GetRookAccessibleSqares(rank, file).Concat(GetBishopAccessibleSqares(rank, file)),
+                Piece.Pawn => GetPawnAccessibleSquares(rank, file, false).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.Knight => GetKnightAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.Bishop => GetBishopAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.Rook => GetRookAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.Queen => GetRookAccessibleSqares(rank, file).Concat(GetBishopAccessibleSqares(rank, file)).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.King => GetKingAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
 
-                _ => Enumerable.Empty<object>(),
+                _ => Enumerable.Empty<Move>(),
             };
         }
 

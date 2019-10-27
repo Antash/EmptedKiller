@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 
 namespace EmptedKillerCore.Evaluation
 {
@@ -30,8 +27,8 @@ namespace EmptedKillerCore.Evaluation
             {
                 Piece.Knight => position.GetValidMoves(rank, file).Count() * 0.1f,
                 Piece.Bishop => position.GetValidMoves(rank, file).Count() * 0.1f,
-                Piece.Rook => position.GetValidMoves(rank, file).Count() * 0.07f,
-                Piece.Queen => position.GetValidMoves(rank, file).Count() * 0.04f,
+                Piece.Rook => position.GetValidMoves(rank, file).Count() * 0.05f,
+                Piece.Queen => position.GetValidMoves(rank, file).Count() * 0.03f,
                 _ => 0,
             };
         }

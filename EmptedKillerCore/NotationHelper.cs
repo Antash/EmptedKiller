@@ -24,7 +24,7 @@ namespace EmptedKillerCore
 
         public static char GetPieceChar(Piece piece)
         {
-            return (piece & ~Piece.Black) switch
+            return (piece.NoColor()) switch
             {
                 Piece.Pawn => 'p',
                 Piece.Knight => 'n',

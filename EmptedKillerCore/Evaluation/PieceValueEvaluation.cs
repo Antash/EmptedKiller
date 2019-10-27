@@ -21,7 +21,7 @@
 
         private float GetPieceValue(IPosition position, int rank, int file)
         {
-            return position.GetPiece(rank, file) switch
+            return (position.GetPiece(rank, file).NoColor()) switch
             {
                 Piece.Pawn => 1,
                 Piece.Knight => 3,

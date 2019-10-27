@@ -26,7 +26,7 @@ namespace EmptedKillerCore
 
         IEnumerable<Move> GetValidMoves();
 
-        IEnumerable<object> GetValidMoves(int rank, int file);
+        IEnumerable<Move> GetValidMoves(int rank, int file);
 
         IPosition MakeMove(Move move);
     }
