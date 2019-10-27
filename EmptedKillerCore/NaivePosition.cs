@@ -120,7 +120,7 @@ namespace EmptedKillerCore
                                 accessibleSqares = GetBishopAccessibleSqares(rank, file).Concat(GetRookAccessibleSqares(rank, file));
                                 break;
                             case Piece.King:
-                                accessibleSqares = GetKingAccessibleSqares(rank, file);
+                                accessibleSqares = GetKingAccessibleSqares(rank, file, potentialCapture);
                                 break;
                         }
                     }
@@ -202,7 +202,7 @@ namespace EmptedKillerCore
             }
         }
 
-        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file)
+        private IEnumerable<(int, int)> GetKingAccessibleSqares(int rank, int file, bool potentialCapture)
         {
             foreach (var offset in kingMoveOffsets)
             {
@@ -212,6 +212,12 @@ namespace EmptedKillerCore
                 {
                     yield return (rank + offset.Item1, file + offset.Item2);
                 }
+            }
+
+            if (potentialCapture)
+            {
+                // Castling is not a capture move
+                yield break;
             }
 
             // Castling
@@ -239,7 +245,7 @@ namespace EmptedKillerCore
 
         private bool IsUnderThreat(int rank, int file)
         {
-            return GetValidMovesInternal(!WhiteToMove, true)
+            return GetValidMovesInternal(true, true)
                 .Any(move => move.ToRank == rank && move.ToFile == file);
         }
 
@@ -403,7 +409,7 @@ namespace EmptedKillerCore
                 Piece.Bishop => GetBishopAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
                 Piece.Rook => GetRookAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
                 Piece.Queen => GetRookAccessibleSqares(rank, file).Concat(GetBishopAccessibleSqares(rank, file)).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
-                Piece.King => GetKingAccessibleSqares(rank, file).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
+                Piece.King => GetKingAccessibleSqares(rank, file, false).SelectMany(s => ConvertToMove(rank, file, s.Item1, s.Item2)),
 
                 _ => Enumerable.Empty<Move>(),
             };
