@@ -1,11 +1,8 @@
-﻿using EmptedKillerCore;
+﻿using EmptedKillerCore.Engine;
 using EmptedKillerCore.Evaluation;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace EmptedKillerCoreTests
+namespace EmptedKillerCore.Tests
 {
     public class ForcedMateTests
     {
@@ -20,7 +17,7 @@ namespace EmptedKillerCoreTests
         public void MateInOne(string fen, string solutionMoveCode)
         {
             var position = _serializer.Read(fen);
-            var eng = new Engine(_evaluation);
+            var eng = new EngineRecursive(_evaluation);
         }
     }
 }

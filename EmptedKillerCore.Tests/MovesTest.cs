@@ -1,8 +1,7 @@
-﻿using EmptedKillerCore;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Linq;
 
-namespace EmptedKillerCoreTests
+namespace EmptedKillerCore.Tests
 {
     public class MovesTest
     {

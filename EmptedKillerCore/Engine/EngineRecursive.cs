@@ -3,15 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EmptedKillerCore
+namespace EmptedKillerCore.Engine
 {
-    public class Engine
+    public class EngineRecursive
     {
         public List<IPosition> lines = new List<IPosition>();
 
         private readonly IEvaluate _evaluationEngine;
 
-        public Engine(IEvaluate evaluationEngine)
+        public EngineRecursive(IEvaluate evaluationEngine)
         {
             _evaluationEngine = evaluationEngine;
         }

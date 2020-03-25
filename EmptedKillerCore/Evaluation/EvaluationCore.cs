@@ -12,7 +12,7 @@ namespace EmptedKillerCore.Evaluation
             _evaluationModules = evaluationModules;
         }
 
-        public float Evaluate(IPosition position)
+        public int Evaluate(IPosition position)
         {
             // Check is one side already win
             // (king capture, max abs evaluation)

@@ -2,8 +2,8 @@
 {
     public interface IEvaluate
     {
-        static readonly float MaxEvaluation = 500;
+        static readonly int MaxEvaluation = 50000;
 
-        float Evaluate(IPosition position);
+        int Evaluate(IPosition position);
     }
 }

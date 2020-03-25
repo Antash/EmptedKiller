@@ -1,7 +1,6 @@
-using EmptedKillerCore;
 using NUnit.Framework;
 
-namespace EmptedKillerCoreTests
+namespace EmptedKillerCore.Tests
 {
     public class FenSerializerTest
     {

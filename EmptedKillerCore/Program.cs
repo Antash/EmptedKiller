@@ -1,4 +1,5 @@
-﻿using EmptedKillerCore.Evaluation;
+﻿using EmptedKillerCore.Engine;
+using EmptedKillerCore.Evaluation;
 using System;
 using System.IO;
 
@@ -50,7 +51,7 @@ namespace EmptedKillerCore
                     pos = pos.MakeMove(NotationHelper.ParseMoveCode(args.Data));
                     break;
                 case UCICommandType.Go:
-                    var eng = new Engine(ev);
+                    var eng = new EngineRecursive(ev);
                     eng.Analyze(pos);
 
                     var ll = eng.lines;

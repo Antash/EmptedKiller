@@ -72,5 +72,14 @@ namespace EmptedKillerCore
                 return new Move(startRank, startFile, endRank, endFile);
             }
         }
+
+        public static int Concat(Piece piece, int rank, int file)
+        {
+            // 32-25 bits - piece
+            // 24-17 - n/a
+            // 16-9 bits - rank
+            // 8-1 bits - file 
+            return ((int)piece << 24) | rank << 8 | file;
+        }
     }
 }

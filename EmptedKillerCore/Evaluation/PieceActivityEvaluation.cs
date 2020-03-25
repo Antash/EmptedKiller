@@ -4,9 +4,9 @@ namespace EmptedKillerCore.Evaluation
 {
     public class PieceActivityEvaluation : IEvaluate
     {
-        public float Evaluate(IPosition position)
+        public int Evaluate(IPosition position)
         {
-            float result = 0;
+            int result = 0;
 
             for (int rank = 0; rank < 8; rank++)
             {
@@ -21,14 +21,14 @@ namespace EmptedKillerCore.Evaluation
             return result;
         }
 
-        private float GetPieceActivity(IPosition position, int rank, int file)
+        private int GetPieceActivity(IPosition position, int rank, int file)
         {
             return position.GetPiece(rank, file).NoColor() switch
             {
-                Piece.Knight => position.GetValidMoves(rank, file).Count() * 0.1f,
-                Piece.Bishop => position.GetValidMoves(rank, file).Count() * 0.1f,
-                Piece.Rook => position.GetValidMoves(rank, file).Count() * 0.05f,
-                Piece.Queen => position.GetValidMoves(rank, file).Count() * 0.03f,
+                Piece.Knight => position.GetValidMoves(rank, file).Count() * 10,
+                Piece.Bishop => position.GetValidMoves(rank, file).Count() * 10,
+                Piece.Rook => position.GetValidMoves(rank, file).Count() * 5,
+                Piece.Queen => position.GetValidMoves(rank, file).Count() * 3,
                 _ => 0,
             };
         }

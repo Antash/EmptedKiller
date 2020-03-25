@@ -2,9 +2,9 @@
 {
     public class PieceValueEvaluation : IEvaluate
     {
-        public float Evaluate(IPosition position)
+        public int Evaluate(IPosition position)
         {
-            float result = 0;
+            int result = 0;
 
             for (int rank = 0; rank < 8; rank++)
             {
@@ -19,15 +19,15 @@
             return result;
         }
 
-        private float GetPieceValue(IPosition position, int rank, int file)
+        private int GetPieceValue(IPosition position, int rank, int file)
         {
             return (position.GetPiece(rank, file).NoColor()) switch
             {
-                Piece.Pawn => 1,
-                Piece.Knight => 3,
-                Piece.Bishop => 3,
-                Piece.Rook => 5,
-                Piece.Queen => 9,
+                Piece.Pawn => 100,
+                Piece.Knight => 300,
+                Piece.Bishop => 300,
+                Piece.Rook => 500,
+                Piece.Queen => 900,
 
                 _ => 0,
             };
